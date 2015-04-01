@@ -6,6 +6,8 @@ class Listing < ActiveRecord::Base
   require 'open-uri'
   require 'mechanize'
   
+  validates :url, presence: true, uniqueness: true
+  
   def self.get_lonelyplanet_trips
     lp_trips = []
     url = "https://www.lonelyplanet.com/thorntree/forums/travel-companions.atom"
@@ -34,35 +36,38 @@ class Listing < ActiveRecord::Base
     form['user[password]'] = "3035jerry"
     form.submit
 
-    page = agent.get("https://www.couchsurfing.com/groups/14")
 
-    page.links.each do |link|
-      if link.href.include?("/groups/14/threads/")
-        unless link.href.include?("/groups/14/threads/new")
-          new_page = link.click
-          
-          source = "cs"
-          url = "https://www.couchsurfing.com" + link.href
 
-          t.datetime "published_at"
-          t.text     "title"
-          t.text     "content"
-          t.string   "name"
-          t.string   "profile_url"
-          
-          new_page.search(".comment--initial .comment").search(".comment__recipient").text # first and last name
-          new_page.search(".comment--initial .comment").search(".comment__recipient").search("a")[0]["href"] # link to profile
-          new_page.search(".comment--initial .comment").search(".card__location").text # location
-          new_page.search(".comment--initial .comment").search(".comment__text").text # content
-          new_page.search(".comment--initial .comment").search(".comment__date").text # date
-          new_page.search("island__super-title").text # title
+    50.times do |n|
+      url_first = "https://www.couchsurfing.com/groups/14/page/"
+      page_number = (n + 1).to_s
+      url = url_first + page_number
+      page = agent.get(url)
+      
+      page.links.each do |link|
+        if link.href.include?("/groups/14/threads/")
+          unless link.href.include?("/groups/14/threads/new")
+            new_page = link.click
+
+            source = "cs"
+            url = "https://www.couchsurfing.com" + link.href
+            name = new_page.search(".comment--initial .comment").search(".comment__recipient").text # first and last name
+            profile_url = new_page.search(".comment--initial .comment").search(".comment__recipient").search("a")[0]["href"] # link to profile
+            location = new_page.search(".comment--initial .comment").search(".card__location").text # location
+            content = new_page.search(".comment--initial .comment").search(".comment__text").text # content
+            unparsed_date = new_page.search(".comment--initial .comment").search(".comment__date").text # date
+            # published_at = DateTime.parse(unparsed_date)
+            title = new_page.search("island__super-title").text # title
+
+            Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
+                           content: content, unparsed_date: unparsed_date, title: title)
+          end
         end
       end
+      
     end
     
-    next_page = "https://www.couchsurfing.com/groups/14/page/2"
     
-    link_group
   end
   
 end

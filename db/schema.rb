@@ -18,14 +18,18 @@ ActiveRecord::Schema.define(version: 20150401183942) do
 
   create_table "listings", force: true do |t|
     t.string   "source"
-    t.string   "url"
+    t.string   "url",           null: false
     t.datetime "published_at"
     t.text     "title"
     t.text     "content"
     t.string   "name"
     t.string   "profile_url"
+    t.string   "location"
+    t.string   "unparsed_date"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "listings", ["url"], name: "index_listings_on_url", unique: true, using: :btree
 
 end
