@@ -7,6 +7,8 @@ class Listing < ActiveRecord::Base
   require 'mechanize'
   
   geocoded_by :location
+  after_validation :geocode
+  
   validates :url, presence: true, uniqueness: true
   
   def self.get_lonelyplanet_trips
