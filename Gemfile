@@ -14,6 +14,7 @@ gem 'nokogiri'
 gem 'feedjira'
 gem 'mechanize'
 gem 'geocoder'
+gem 'gmaps4rails'
 
 group :development do
   gem 'letter_opener'
