@@ -13,6 +13,7 @@ gem 'thin'
 gem 'nokogiri'
 gem 'feedjira'
 gem 'mechanize'
+gem 'geocoder'
 
 group :development do
   gem 'letter_opener'

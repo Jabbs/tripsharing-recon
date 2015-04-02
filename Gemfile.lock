@@ -57,6 +57,7 @@ GEM
       sax-machine (~> 1.0)
     figaro (1.1.0)
       thor (~> 0.14)
+    geocoder (1.2.8)
     hike (1.2.3)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
@@ -175,6 +176,7 @@ DEPENDENCIES
   faker
   feedjira
   figaro
+  geocoder
   jbuilder (~> 2.0)
   jquery-rails
   letter_opener

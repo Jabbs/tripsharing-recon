@@ -6,6 +6,7 @@ class Listing < ActiveRecord::Base
   require 'open-uri'
   require 'mechanize'
   
+  geocoded_by :location
   validates :url, presence: true, uniqueness: true
   
   def self.get_lonelyplanet_trips
