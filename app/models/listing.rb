@@ -41,7 +41,7 @@ class Listing < ActiveRecord::Base
 
 
 
-    50.times do |n|
+    100.times do |n|
       url_first = "https://www.couchsurfing.com/groups/14/page/"
       page_number = (n + 51).to_s
       url = url_first + page_number
@@ -51,7 +51,6 @@ class Listing < ActiveRecord::Base
         if link.href.include?("/groups/14/threads/")
           unless link.href.include?("/groups/14/threads/new")
             new_page = link.click
-
             source = "cs"
             url = "https://www.couchsurfing.com" + link.href
             name = new_page.search(".comment--initial .comment").search(".comment__recipient").text # first and last name
@@ -62,8 +61,12 @@ class Listing < ActiveRecord::Base
             # published_at = DateTime.parse(unparsed_date)
             title = new_page.search("island__super-title").text # title
 
-            Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
+            listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
                            content: content, unparsed_date: unparsed_date, title: title)
+            if listing.present?
+              Rails.logger.info "Listing created: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+              sleep 10
+            end
           end
         end
       end
