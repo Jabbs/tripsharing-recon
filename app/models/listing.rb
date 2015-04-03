@@ -50,23 +50,26 @@ class Listing < ActiveRecord::Base
       page.links.each do |link|
         if link.href.include?("/groups/14/threads/")
           unless link.href.include?("/groups/14/threads/new")
-            new_page = link.click
-            source = "cs"
             url = "https://www.couchsurfing.com" + link.href
-            name = new_page.search(".comment--initial .comment").search(".comment__recipient").text # first and last name
-            profile_url = new_page.search(".comment--initial .comment").search(".comment__recipient").search("a")[0]["href"] # link to profile
-            location = new_page.search(".comment--initial .comment").search(".card__location").text # location
-            content = new_page.search(".comment--initial .comment").search(".comment__text").text # content
-            unparsed_date = new_page.search(".comment--initial .comment").search(".comment__date").text # date
-            # published_at = DateTime.parse(unparsed_date)
-            title = new_page.search("island__super-title").text # title
-            Rails.logger.info url
-            listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
-                           content: content, unparsed_date: unparsed_date, title: title)
-            if listing.present?
-              Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
-              sleep 10
+            unless Listing.find_by_url(url).present?
+              new_page = link.click
+              source = "cs"
+              name = new_page.search(".comment--initial .comment").search(".comment__recipient").text # first and last name
+              profile_url = new_page.search(".comment--initial .comment").search(".comment__recipient").search("a")[0]["href"] # link to profile
+              location = new_page.search(".comment--initial .comment").search(".card__location").text # location
+              content = new_page.search(".comment--initial .comment").search(".comment__text").text # content
+              unparsed_date = new_page.search(".comment--initial .comment").search(".comment__date").text # date
+              # published_at = DateTime.parse(unparsed_date)
+              title = new_page.search("island__super-title").text # title
+              Rails.logger.info url
+              listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
+                             content: content, unparsed_date: unparsed_date, title: title)
+              if listing.present?
+                Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+                sleep 10
+              end
             end
+            
           end
         end
       end
