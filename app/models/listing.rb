@@ -60,11 +60,11 @@ class Listing < ActiveRecord::Base
             unparsed_date = new_page.search(".comment--initial .comment").search(".comment__date").text # date
             # published_at = DateTime.parse(unparsed_date)
             title = new_page.search("island__super-title").text # title
-
+            Rails.logger.info url
             listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
                            content: content, unparsed_date: unparsed_date, title: title)
             if listing.present?
-              Rails.logger.info "Listing created: id: #{listing.id} #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+              Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
               sleep 10
             end
           end
