@@ -64,7 +64,7 @@ class Listing < ActiveRecord::Base
             listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
                            content: content, unparsed_date: unparsed_date, title: title)
             if listing.present?
-              Rails.logger.info "Listing created: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+              Rails.logger.info "Listing created: id: #{listing.id} #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
               sleep 10
             end
           end
