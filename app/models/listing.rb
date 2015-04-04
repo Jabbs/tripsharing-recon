@@ -43,7 +43,7 @@ class Listing < ActiveRecord::Base
 
     100.times do |n|
       url_first = "https://www.couchsurfing.com/groups/14/page/"
-      page_number = (n + 60).to_s
+      page_number = (n + 160).to_s
       url = url_first + page_number
       page = agent.get(url)
       
