@@ -40,9 +40,9 @@ class Listing < ActiveRecord::Base
     form.submit
     
     # 10 per page
-    150.times do |n|
+    200.times do |n|
       url_first = "https://www.lonelyplanet.com/thorntree/forums/travel-companions?page="
-      page_number = (n + 360).to_s
+      page_number = (n + 1).to_s
       url = url_first + page_number
       page = agent.get(url)
       
