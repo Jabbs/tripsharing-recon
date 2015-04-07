@@ -30,6 +30,55 @@ class Listing < ActiveRecord::Base
     lp_trips
   end
   
+  def self.parse_lonely_planet
+    agent = Mechanize.new
+    url = "https://auth.lonelyplanet.com/"
+    agent.get(url)
+    form = agent.page.forms_with(id: "login_form").first
+    form['user[username]'] = "Jabbs"
+    form['user[password]'] = "kYNB)D78g4A,"
+    form.submit
+    
+    # 10 per page
+    100.times.do |n|
+      url_first = "https://www.lonelyplanet.com/thorntree/forums/travel-companions?page="
+      page_number = (n + 360).to_s
+      url = url_first + page_number
+      page = agent.get(url)
+      
+      page.links.each do |link|
+        if link.href.present? && link.href.include?("/travel-companions/topics/")
+          unless link.href.include?("/travel-companions/topics/new")
+            url = "https://www.lonelyplanet.com" + link.href
+            unless Listing.find_by_url(url).present?
+              new_page = link.click
+              source = "lp"
+              name = new_page.search(".user-info__username").first.text[2..-1] # username
+              profile_url = new_page.search(".user-info__username").first.search("a")[0]["href"] # link to profile
+              content = new_page.search(".post__content").first.text # content
+              unparsed_date = new_page.search(".user-info__meta").first.search("time")[0]["datetime"]
+              title = new_page.search(".topic-header").search(".copy--h1").text
+              
+              # NO LOCATION...HAVE TO FIND ON PROFILE
+              profile_page = agent.get(profile_url)
+              location = profile_page.search(".current_location").last.text
+
+              Rails.logger.info url
+              listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
+                             content: content, unparsed_date: unparsed_date, title: title)
+              if listing.present?
+                Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+                sleep 10
+              end
+              
+            end
+          end
+        end
+      end
+      
+    end
+  end
+  
   def self.parse_couch_surfing
     agent = Mechanize.new
     url = "https://www.couchsurfing.com/users/sign_in"
@@ -39,8 +88,7 @@ class Listing < ActiveRecord::Base
     form['user[password]'] = "3035jerry"
     form.submit
 
-
-
+    # 20 per page
     100.times do |n|
       url_first = "https://www.couchsurfing.com/groups/14/page/"
       page_number = (n + 360).to_s
@@ -69,7 +117,6 @@ class Listing < ActiveRecord::Base
                 sleep 10
               end
             end
-            
           end
         end
       end
