@@ -82,7 +82,7 @@ class Listing < ActiveRecord::Base
     # 10 per page
     100.times do |n|
       url_first = "https://www.lonelyplanet.com/thorntree/forums/travel-companions?page="
-      page_number = (n + 70).to_s
+      page_number = (n + 83).to_s
       url = url_first + page_number
       page = agent.get(url)
       
