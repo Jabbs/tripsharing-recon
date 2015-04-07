@@ -30,6 +30,46 @@ class Listing < ActiveRecord::Base
     lp_trips
   end
   
+  def self.get_fb_accounts_from_lp
+    agent = Mechanize.new
+    url = "https://auth.lonelyplanet.com/"
+    agent.get(url)
+    form = agent.page.forms_with(id: "login_form").first
+    form['user[username]'] = "Jabbs"
+    form['user[password]'] = "kYNB)D78g4A,"
+    form.submit
+    
+    fb_accounts = []
+    Listing.where(source: "lp").pluck(:profile_url).each do |profile_url|
+      page = agent.get(profile_url)
+      fb = page.search(".facebook").last.text
+      unless fb == "No facebook specified."
+        fb_accounts << fb
+      end
+    end
+    fb_accounts
+  end
+  
+  def self.get_twitter_accounts_from_lp
+    agent = Mechanize.new
+    url = "https://auth.lonelyplanet.com/"
+    agent.get(url)
+    form = agent.page.forms_with(id: "login_form").first
+    form['user[username]'] = "Jabbs"
+    form['user[password]'] = "kYNB)D78g4A,"
+    form.submit
+    
+    twitter_accounts = []
+    Listing.where(source: "lp").pluck(:profile_url).each do |profile_url|
+      page = agent.get(profile_url)
+      twitter = page.search(".twitter").last.text
+      unless twitter == "No twitter specified."
+        twitter_accounts << twitter
+      end
+    end
+    twitter_accounts
+  end
+  
   def self.parse_lonely_planet
     agent = Mechanize.new
     url = "https://auth.lonelyplanet.com/"
