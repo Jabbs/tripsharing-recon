@@ -9,7 +9,8 @@ class Listing < ActiveRecord::Base
   geocoded_by :location
   after_validation :geocode
   
-  validates :url, presence: true, uniqueness: true
+  validates :url, presence: true, uniqueness: true, length: { maximum: 255 }
+  validates :profile_url, length: { maximum: 255 }
   
   def self.get_lonelyplanet_trips
     lp_trips = []
@@ -82,7 +83,7 @@ class Listing < ActiveRecord::Base
     # 10 per page
     300.times do |n|
       url_first = "https://www.lonelyplanet.com/thorntree/forums/travel-companions?page="
-      page_number = (n + 135).to_s
+      page_number = (n + 215).to_s
       url = url_first + page_number
       page = agent.get(url)
       
