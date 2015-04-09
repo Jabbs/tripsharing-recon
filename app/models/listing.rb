@@ -71,7 +71,7 @@ class Listing < ActiveRecord::Base
     twitter_accounts
   end
   
-  def self.parse_lonely_planet
+  def self.parse_lp
     agent = Mechanize.new
     url = "https://auth.lonelyplanet.com/"
     agent.get(url)
@@ -83,7 +83,7 @@ class Listing < ActiveRecord::Base
     # 10 per page
     300.times do |n|
       url_first = "https://www.lonelyplanet.com/thorntree/forums/travel-companions?page="
-      page_number = (n + 306).to_s
+      page_number = (n + 307).to_s
       url = url_first + page_number
       page = agent.get(url)
       
@@ -94,7 +94,7 @@ class Listing < ActiveRecord::Base
             unless Listing.find_by_url(url).present?
               new_page = link.click
               source = "lp"
-              if new_page.search(".user-info__username").first.search("a").any? && new_page.search(".user-info__username").any?
+              if new_page.search(".user-info__username").any? && new_page.search(".user-info__username").any?
                 name = new_page.search(".user-info__username").first.text[2..-1] # username
                 profile_url = new_page.search(".user-info__username").first.search("a")[0]["href"] # link to profile
                 content = new_page.search(".post__content").first.text # content
