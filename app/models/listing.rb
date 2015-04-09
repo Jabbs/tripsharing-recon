@@ -94,24 +94,25 @@ class Listing < ActiveRecord::Base
             unless Listing.find_by_url(url).present?
               new_page = link.click
               source = "lp"
+              unless new_page.nil?
+                if new_page.search(".user-info__username").first.search("a").any? && new_page.search(".user-info__username").any?
+                  name = new_page.search(".user-info__username").first.text[2..-1] # username
+                  profile_url = new_page.search(".user-info__username").first.search("a")[0]["href"] # link to profile
+                  content = new_page.search(".post__content").first.text # content
+                  unparsed_date = new_page.search(".user-info__meta").first.search("time")[0]["datetime"]
+                  title = new_page.search(".topic-header").search(".copy--h1").text
               
-              if new_page.present? && new_page.search(".user-info__username").first.search("a").any? && new_page.search(".user-info__username").any?
-                name = new_page.search(".user-info__username").first.text[2..-1] # username
-                profile_url = new_page.search(".user-info__username").first.search("a")[0]["href"] # link to profile
-                content = new_page.search(".post__content").first.text # content
-                unparsed_date = new_page.search(".user-info__meta").first.search("time")[0]["datetime"]
-                title = new_page.search(".topic-header").search(".copy--h1").text
-              
-                # NO LOCATION...HAVE TO FIND ON PROFILE
-                profile_page = agent.get(profile_url)
-                location = profile_page.search(".current_location").last.text
+                  # NO LOCATION...HAVE TO FIND ON PROFILE
+                  profile_page = agent.get(profile_url)
+                  location = profile_page.search(".current_location").last.text
 
-                Rails.logger.info url
-                listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
-                               content: content, unparsed_date: unparsed_date, title: title)
-                if listing.present?
-                  Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
-                  sleep 10
+                  Rails.logger.info url
+                  listing = Listing.create(source: source, url: url, name: name, profile_url: profile_url, location: location,
+                                 content: content, unparsed_date: unparsed_date, title: title)
+                  if listing.present?
+                    Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+                    sleep 10
+                  end
                 end
               end
               
