@@ -94,8 +94,9 @@ class Listing < ActiveRecord::Base
             unless Listing.find_by_url(url).present?
               new_page = link.click
               source = "lp"
-              name = new_page.search(".user-info__username").first.text[2..-1] # username
-              if new_page.search(".user-info__username").first.search("a").any?
+              
+              if new_page.search(".user-info__username").first.search("a").any? && new_page.search(".user-info__username").any?
+                name = new_page.search(".user-info__username").first.text[2..-1] # username
                 profile_url = new_page.search(".user-info__username").first.search("a")[0]["href"] # link to profile
                 content = new_page.search(".post__content").first.text # content
                 unparsed_date = new_page.search(".user-info__meta").first.search("time")[0]["datetime"]
