@@ -122,6 +122,45 @@ class Listing < ActiveRecord::Base
     end
   end
   
+  def self.friend_couch_surfers
+    agent = Mechanize.new
+    url = "https://www.couchsurfing.com/users/sign_in"
+    agent.get(url)
+    form = agent.page.forms.first
+    form['user[login]'] = "petejabbour1@gmail.com"
+    form['user[password]'] = "M#94uGR/b8DA"
+    form.submit
+    
+    2.times do |n|
+      url_first = "https://www.couchsurfing.com/groups/14/page/"
+      page_number = (n + 1).to_s
+      url = url_first + page_number
+      page = agent.get(url)
+      
+      page.search(".comment__image").each do |image|
+        href = image.search("a")[0]["href"]
+        if href.present?
+          url = "https://www.couchsurfing.com" + href
+          page = agent.get(url)
+          page.links.each do |link|
+            if link.text == "Add friend"
+              begin
+                link.click
+              rescue Mechanize::ResponseCodeError
+              end
+              name = page.search(".cs-profile-title").text.strip
+              location = page.search(".cs-profile-subtitle").text.strip
+              Rails.logger.info "#{name}. #{location}"
+              sleep rand(200..600)
+            end
+          end
+        end
+      end
+    end
+    
+  end
+  
+  
   def self.parse_couch_surfing
     agent = Mechanize.new
     url = "https://www.couchsurfing.com/users/sign_in"
