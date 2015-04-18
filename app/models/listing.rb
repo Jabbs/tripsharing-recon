@@ -81,9 +81,9 @@ class Listing < ActiveRecord::Base
     form.submit
     
     # 10 per page
-    350.times do |n|
+    50.times do |n|
       url_first = "https://www.lonelyplanet.com/thorntree/forums/travel-companions?page="
-      page_number = (n + 998).to_s
+      page_number = (n + 1).to_s
       url = url_first + page_number
       page = agent.get(url)
       
@@ -131,7 +131,7 @@ class Listing < ActiveRecord::Base
     form['user[password]'] = "M#94uGR/b8DA"
     form.submit
     
-    2.times do |n|
+    10.times do |n|
       url_first = "https://www.couchsurfing.com/groups/14/page/"
       page_number = (n + 1).to_s
       url = url_first + page_number
@@ -142,18 +142,27 @@ class Listing < ActiveRecord::Base
         if href.present?
           url = "https://www.couchsurfing.com" + href
           page = agent.get(url)
-          page.links.each do |link|
-            if link.text == "Add friend"
-              begin
-                link.click
-              rescue Mechanize::ResponseCodeError
-              end
+          if page.search(".cs-dropdown-menu").search("li").any?
+            friending = page.search(".cs-dropdown-menu").search("li").first.text.strip
+            if friending == "Friend Request Sent" || friending == "Remove Friend"
               name = page.search(".cs-profile-title").text.strip
-              location = page.search(".cs-profile-subtitle").text.strip
-              Rails.logger.info "#{name}. #{location}"
-              sleep rand(200..600)
+              puts name + " | #{page_number}"
             end
           end
+            
+          # page.links.each do |link|
+          #   if link.text == "Add Friend"
+          #     begin
+          #       link.click
+          #     rescue Mechanize::ResponseCodeError
+          #     end
+          #     name = page.search(".cs-profile-title").text.strip
+          #     location = page.search(".cs-profile-subtitle").text.strip
+          #     Rails.logger.info "#{name}. #{location}"
+          #     sleep rand(200..600)
+          #   end
+          # end
+          
         end
       end
     end
@@ -171,9 +180,9 @@ class Listing < ActiveRecord::Base
     form.submit
 
     # 20 per page
-    100.times do |n|
+    50.times do |n|
       url_first = "https://www.couchsurfing.com/groups/14/page/"
-      page_number = (n + 360).to_s
+      page_number = (n + 1).to_s
       url = url_first + page_number
       page = agent.get(url)
       
