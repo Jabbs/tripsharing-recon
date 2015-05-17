@@ -165,6 +165,7 @@ class Listing < ActiveRecord::Base
             trip_returns_at = trip_returns_at.try(:to_datetime)
           rescue ArgumentError
             puts "date error"
+            return
           end
           trip_duration = page.search(".dlTravelPlans").search(".RegionLabel").text.split("-").last.split("to").last.split("(").last.strip.delete(")")
           trip_type = page.search("#dlRoutes_ctl00_TripTypeLabel").text
