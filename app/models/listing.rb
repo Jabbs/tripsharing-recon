@@ -228,9 +228,9 @@ class Listing < ActiveRecord::Base
     Listing.where(source: "tb").each do |listing|
       if listing.age.present? && listing.age != "0"
         age = listing.age.strip.to_i
-        if gender == "Female"
+        if listing.gender == "Female"
           urls << listing.url
-        elsif gender == "Male"
+        elsif listing.gender == "Male"
           if age > 28 && age < 35
             urls << listing.url
           end
