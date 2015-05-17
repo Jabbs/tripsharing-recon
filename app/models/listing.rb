@@ -229,9 +229,11 @@ class Listing < ActiveRecord::Base
       if listing.age.present? && listing.age != "0"
         age = listing.age.strip.to_i
         if listing.gender == "Female"
-          urls << listing.url
+          if age > 24 && age < 40
+            urls << listing.url
+          end
         elsif listing.gender == "Male"
-          if age > 28 && age < 35
+          if age > 28 && age < 34
             urls << listing.url
           end
         end
