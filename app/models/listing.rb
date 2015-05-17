@@ -199,6 +199,29 @@ class Listing < ActiveRecord::Base
     end
   end
   
+  def self.average_age
+    sum = 0
+    count = 0
+    Listing.where(source: "tb").pluck(:age).each do |age|
+      if age.present? && age != "0"
+        sum += age.to_i
+        count += 1
+      end
+    end
+    sum/count
+  end
+  
+  def self.average_trip_duration
+    sum = 0
+    count = 0
+    Listing.where(source: "tb").pluck(:trip_duration).each do |td|
+      unless td.blank?
+        sum += td.split.first.to_i
+        count += 1
+      end
+    end
+    sum/count
+  end
   
   def self.parse_couch_surfing
     agent = Mechanize.new
