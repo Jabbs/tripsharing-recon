@@ -110,7 +110,7 @@ class Listing < ActiveRecord::Base
                                content: content, unparsed_date: unparsed_date, title: title)
                 if listing.present?
                   Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
-                  sleep 10
+                  sleep 5
                 end
               end
               
@@ -235,7 +235,7 @@ class Listing < ActiveRecord::Base
                              content: content, unparsed_date: unparsed_date, title: title)
               if listing.present?
                 Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
-                sleep 10
+                sleep 5
               end
             end
           end
