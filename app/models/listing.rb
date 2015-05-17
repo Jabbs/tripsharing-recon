@@ -211,7 +211,7 @@ class Listing < ActiveRecord::Base
     sum/count
   end
   
-  def self.average_trip_duration
+  def self.average_trip_duration_in_days
     sum = 0
     count = 0
     Listing.where(source: "tb").pluck(:trip_duration).each do |td|
@@ -221,6 +221,23 @@ class Listing < ActiveRecord::Base
       end
     end
     sum/count
+  end
+  
+  def self.get_tb_urls_to_like
+    urls = []
+    Listing.where(source: "tb").each do |listing|
+      if listing.age.present? && listing.age != "0"
+        age = listing.age.strip.to_i
+        if gender == "Female"
+          urls << listing.url
+        elsif gender == "Male"
+          if age > 28 && age < 35
+            urls << listing.url
+          end
+        end
+      end
+    end
+    urls
   end
   
   def self.parse_couch_surfing
