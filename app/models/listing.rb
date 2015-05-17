@@ -163,9 +163,10 @@ class Listing < ActiveRecord::Base
           begin
             trip_departs_at = trip_departs_at.try(:to_datetime)
             trip_returns_at = trip_returns_at.try(:to_datetime)
+            skip_create = false
           rescue ArgumentError
             puts "date error"
-            return
+            skip_create = true
           end
           trip_duration = page.search(".dlTravelPlans").search(".RegionLabel").text.split("-").last.split("to").last.split("(").last.strip.delete(")")
           trip_type = page.search("#dlRoutes_ctl00_TripTypeLabel").text
@@ -179,15 +180,18 @@ class Listing < ActiveRecord::Base
         # puts "Dest: #{trip_destination}, Status: #{trip_status}, Departs at: #{trip_departs_at}, Returns: #{trip_returns_at}, Duration: #{trip_duration}, Type: #{trip_type}, Mode of transit: #{trip_traveling_by}, Staying in: #{trip_staying_in}"
 
         source = "tb"
-        listing = Listing.create(source: source, url: url, name: name, profile_url: url, location: location,
-                  content: "", unparsed_date: nil, title: "", trip_destination: trip_destination,
-                  trip_status: trip_status, trip_departs_at: trip_departs_at, trip_returns_at: trip_returns_at,
-                  trip_duration: trip_duration, trip_type: trip_type, trip_traveling_by: trip_traveling_by,
-                  trip_staying_in: trip_staying_in, gender: gender, age: age, relationship_status: relationship_status,
-                  nationality: nationality)
-        if listing.present?
-          Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
-          sleep 5
+        unless skip_create == true
+          listing = Listing.create(source: source, url: url, name: name, profile_url: url, location: location,
+                    content: "", unparsed_date: nil, title: "", trip_destination: trip_destination,
+                    trip_status: trip_status, trip_departs_at: trip_departs_at, trip_returns_at: trip_returns_at,
+                    trip_duration: trip_duration, trip_type: trip_type, trip_traveling_by: trip_traveling_by,
+                    trip_staying_in: trip_staying_in, gender: gender, age: age, relationship_status: relationship_status,
+                    nationality: nationality)
+          if listing.present?
+            Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+            sleep 5
+          end
+        
         end
 
       end
