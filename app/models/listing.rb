@@ -122,51 +122,76 @@ class Listing < ActiveRecord::Base
     end
   end
   
-  def self.friend_couch_surfers
+  def self.parse_travel_buddies
     agent = Mechanize.new
-    url = "https://www.couchsurfing.com/users/sign_in"
+    url = 'http://www.travel-buddies.com/LoginOrRegister.aspx'
     agent.get(url)
-    form = agent.page.forms.first
-    form['user[login]'] = "petejabbour1@gmail.com"
-    form['user[password]'] = "M#94uGR/b8DA"
-    form.submit
-    
+    form = agent.page.forms_with(id: "form1").first
+    form['txtLogin_Email'] = "petejabbour1@gmail.com"
+    form['txtLogin_Password'] = "H96+dyKf}2zZ"
+    form.click_button(form.buttons.first)
+        
     10.times do |n|
-      url_first = "https://www.couchsurfing.com/groups/14/page/"
+      url_first = "http://www.travel-buddies.com/Public-Wall.aspx?Page="
       page_number = (n + 1).to_s
       url = url_first + page_number
       page = agent.get(url)
       
-      page.search(".comment__image").each do |image|
-        href = image.search("a")[0]["href"]
-        if href.present?
-          url = "https://www.couchsurfing.com" + href
-          page = agent.get(url)
-          if page.search(".cs-dropdown-menu").search("li").any?
-            friending = page.search(".cs-dropdown-menu").search("li").first.text.strip
-            if friending == "Friend Request Sent" || friending == "Remove Friend"
-              name = page.search(".cs-profile-title").text.strip
-              puts name + " | #{page_number}"
-            end
+      profile_boxes = page.search(".ProfileBox")
+      profile_boxes.each do |pb|
+        profile_id = pb.search("a")[0]["href"].split("=").last
+        first_half_of_profile_url = "http://www.travel-buddies.com/View-Profile.aspx?ID="
+        url = first_half_of_profile_url + profile_id
+        page = agent.get(url)
+        gender = page.search("#ProfileData").search("#lblSex").text
+        location = page.search("#PersonalDetails").search(".PersonalDetails").search("a").text
+
+        unparsed_location_nationality_relationship_and_age = page.search("#PersonalDetails").search(".PersonalDetails").text
+        unparsed_location_nationality_relationship_and_age.slice!(location) # removes location
+        unparsed_nationality_relationship_and_age = unparsed_location_nationality_relationship_and_age.split(",")
+
+        nationality = unparsed_nationality_relationship_and_age[0]
+        relationship_status = unparsed_nationality_relationship_and_age[1]
+        age = unparsed_nationality_relationship_and_age[2]
+        name = page.search(".ProfileHomeName").text
+
+        if page.search(".dlTravelPlans").any?
+          trip_destination = page.search(".dlTravelPlans").search(".CountryLabel").text.split(",").first
+          trip_status = page.search(".dlTravelPlans").search(".RegionLabel").text.split("-").first.strip
+          trip_departs_at = page.search(".dlTravelPlans").search(".RegionLabel").text.split("-").last.split("to").first.strip
+          trip_returns_at = page.search(".dlTravelPlans").search(".RegionLabel").text.split("-").last.split("to").last.split("(").first.strip
+          begin
+            trip_departs_at = trip_departs_at.try(:to_datetime)
+            trip_returns_at = trip_returns_at.try(:to_datetime)
+          rescue ArgumentError
+            puts "date error"
           end
-            
-          # page.links.each do |link|
-          #   if link.text == "Add Friend"
-          #     begin
-          #       link.click
-          #     rescue Mechanize::ResponseCodeError
-          #     end
-          #     name = page.search(".cs-profile-title").text.strip
-          #     location = page.search(".cs-profile-subtitle").text.strip
-          #     Rails.logger.info "#{name}. #{location}"
-          #     sleep rand(200..600)
-          #   end
-          # end
-          
+          trip_duration = page.search(".dlTravelPlans").search(".RegionLabel").text.split("-").last.split("to").last.split("(").last.strip.delete(")")
+          trip_type = page.search("#dlRoutes_ctl00_TripTypeLabel").text
+          trip_traveling_by = page.search("#dlRoutes_ctl00_TravellingByLabel").text
+          trip_staying_in = page.search("#dlRoutes_ctl00_StayingInLabel").text
+        else
+          trip_destination = ""; trip_status = ""; trip_departs_at = nil; trip_returns_at = nil; trip_duration = ""
+          trip_type = ""; trip_traveling_by = ""; trip_staying_in = ""
         end
+
+        # puts "Dest: #{trip_destination}, Status: #{trip_status}, Departs at: #{trip_departs_at}, Returns: #{trip_returns_at}, Duration: #{trip_duration}, Type: #{trip_type}, Mode of transit: #{trip_traveling_by}, Staying in: #{trip_staying_in}"
+
+        source = "tb"
+        listing = Listing.create(source: source, url: url, name: name, profile_url: url, location: location,
+                  content: "", unparsed_date: nil, title: "", trip_destination: trip_destination,
+                  trip_status: trip_status, trip_departs_at: trip_departs_at, trip_returns_at: trip_returns_at,
+                  trip_duration: trip_duration, trip_type: trip_type, trip_traveling_by: trip_traveling_by,
+                  trip_staying_in: trip_staying_in, gender: gender, age: age, relationship_status: relationship_status,
+                  nationality: nationality)
+        if listing.present?
+          Rails.logger.info "Listing created: id: #{listing.id}, Location: #{listing.location}, lat: #{listing.latitude} long: #{listing.longitude}"
+          sleep 5
+        end
+
       end
+      
     end
-    
   end
   
   
@@ -211,9 +236,53 @@ class Listing < ActiveRecord::Base
           end
         end
       end
-      
     end
+  end
+  
+  def self.friend_couch_surfers
+    agent = Mechanize.new
+    url = "https://www.couchsurfing.com/users/sign_in"
+    agent.get(url)
+    form = agent.page.forms.first
+    form['user[login]'] = "petejabbour1@gmail.com"
+    form['user[password]'] = "M#94uGR/b8DA"
+    form.submit
     
+    10.times do |n|
+      url_first = "https://www.couchsurfing.com/groups/14/page/"
+      page_number = (n + 1).to_s
+      url = url_first + page_number
+      page = agent.get(url)
+      
+      page.search(".comment__image").each do |image|
+        href = image.search("a")[0]["href"]
+        if href.present?
+          url = "https://www.couchsurfing.com" + href
+          page = agent.get(url)
+          if page.search(".cs-dropdown-menu").search("li").any?
+            friending = page.search(".cs-dropdown-menu").search("li").first.text.strip
+            if friending == "Friend Request Sent" || friending == "Remove Friend"
+              name = page.search(".cs-profile-title").text.strip
+              puts name + " | #{page_number}"
+            end
+          end
+            
+          # page.links.each do |link|
+          #   if link.text == "Add Friend"
+          #     begin
+          #       link.click
+          #     rescue Mechanize::ResponseCodeError
+          #     end
+          #     name = page.search(".cs-profile-title").text.strip
+          #     location = page.search(".cs-profile-subtitle").text.strip
+          #     Rails.logger.info "#{name}. #{location}"
+          #     sleep rand(200..600)
+          #   end
+          # end
+          
+        end
+      end
+    end
     
   end
   

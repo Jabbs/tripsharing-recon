@@ -11,14 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150402000227) do
+ActiveRecord::Schema.define(version: 20150516181115) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "listings", force: true do |t|
     t.string   "source"
-    t.string   "url",           null: false
+    t.string   "url",                              null: false
     t.datetime "published_at"
     t.text     "title"
     t.text     "content"
@@ -30,6 +30,18 @@ ActiveRecord::Schema.define(version: 20150402000227) do
     t.datetime "updated_at"
     t.float    "latitude"
     t.float    "longitude"
+    t.text     "trip_destination",    default: ""
+    t.text     "trip_status",         default: ""
+    t.datetime "trip_departs_at"
+    t.datetime "trip_returns_at"
+    t.text     "trip_duration",       default: ""
+    t.text     "trip_type",           default: ""
+    t.text     "trip_traveling_by",   default: ""
+    t.text     "trip_staying_in",     default: ""
+    t.text     "gender",              default: ""
+    t.text     "age",                 default: ""
+    t.text     "relationship_status", default: ""
+    t.text     "nationality",         default: ""
   end
 
   add_index "listings", ["url"], name: "index_listings_on_url", unique: true, using: :btree
